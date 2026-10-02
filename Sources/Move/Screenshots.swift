@@ -25,7 +25,9 @@ enum Screenshots {
     private static func card(_ phase: BreakSession.Phase, breaksToday: Int, elapsed: Double = 0) -> some View {
         let session = BreakSession()
         session.stage(phase, elapsed: elapsed, breaksToday: breaksToday)
+        let size = ReminderPanelController.size(for: phase)
         return ReminderView(session: session)
+            .frame(width: size.width, height: size.height)
             .shadow(color: .black.opacity(0.18), radius: 24, y: 10)
     }
 

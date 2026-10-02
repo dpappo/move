@@ -61,9 +61,9 @@ Every 30 minutes, a card appears in the top-right corner. Pick one:
 
 | Button | What it does |
 | --- | --- |
-| **Guide me** | Starts a guided routine of about 3 minutes |
+| **Guide me** | Moves the card to the middle of your screen and walks you through a routine of about 3 minutes |
 | **Done** | You moved on your own. See you in 30 minutes |
-| **Later** | Snooze for 10 minutes |
+| **Later** | Snooze for 2, 5, 10, or 15 minutes |
 
 You can drag the card anywhere. It shows up on every Space, even over full-screen apps.
 
@@ -71,18 +71,21 @@ You can drag the card anywhere. It shows up on every Space, even over full-scree
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/flow-dark.png">
-  <img src="docs/screenshots/flow-light.png" alt="Three reminder cards: the prompt listing five movements, a guided step with a countdown ring, and a 'Nicely done' confirmation">
+  <img src="docs/screenshots/flow-light.png" alt="Three reminder cards: the prompt listing five movements, a guided step with an animated figure inside a countdown ring, and a 'Nicely done' confirmation">
 </picture>
 
-Each step has a countdown ring and a short cue. A soft chime marks the next step, and you can **Skip** a step or tap **Done** to finish early. Three routines take turns from one break to the next, so it doesn't get stale:
+When you start the guide, the card glides to the middle of your screen and grows so you can follow along from a step back. Each step has a countdown ring, a short cue, and an animated figure acting out the movement, plus a badge that tells you whether you're in your chair or on your feet. A soft chime marks the next step, and you can **Skip** a step or tap **Done** to finish early.
 
-| Stand & stretch | Reach & rise | Twist & hinge |
-| --- | --- | --- |
-| Stand tall & lean back | Reach & side bend | Twist your upper back |
-| Roll & squeeze shoulders | Open your chest | Stretch your wrists |
-| Tuck & turn your neck | Ease your neck | Open your hips |
-| Calf raises | Sit to stand | Hip hinges |
-| Walk around (90 s) | Take a longer walk (90 s) | Walk & breathe (90 s) |
+Every routine starts with what you can do in your chair, then tells you when to stand up for the rest. Three routines take turns from one break to the next, so it doesn't get stale:
+
+| | Stand & stretch | Reach & rise | Twist & hinge |
+| --- | --- | --- | --- |
+| **In your chair** | Roll & squeeze shoulders | Ease your neck | Twist your upper back |
+| | Tuck & turn your neck | Reach & side bend | Stretch your wrists |
+| **Stand up** | Stand up | Sit to stand | Stand up |
+| **On your feet** | Stand tall & lean back | Open your chest | Open your hips |
+| | Calf raises | | Hip hinges |
+| | Walk around (90 s) | Take a longer walk (90 s) | Walk & breathe (90 s) |
 
 ### 3. The menu bar
 
@@ -117,7 +120,7 @@ That builds `Move.app`, copies it to `/Applications`, and opens it. On macOS 26 
 
 ## Contributing
 
-Issues and pull requests are welcome. The whole app is about a thousand lines of Swift in [`Sources/Move`](Sources/Move).
+Issues and pull requests are welcome. The whole app is about two thousand lines of Swift in [`Sources/Move`](Sources/Move).
 
 The screenshots above are rendered from the app's real SwiftUI views, so they never fall out of date. To have them refresh automatically, turn on the repo's git hooks once:
 

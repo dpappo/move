@@ -24,8 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.panel.hide()
             self?.updateIcon()
         }
-        session.onSnooze = { [weak self] in
-            self?.scheduler.snooze(minutes: 10)
+        session.onSnooze = { [weak self] minutes in
+            self?.scheduler.snooze(minutes: minutes)
             self?.panel.hide()
             self?.updateIcon()
         }

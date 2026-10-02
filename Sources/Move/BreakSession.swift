@@ -13,7 +13,7 @@ final class BreakSession: ObservableObject {
     @Published private(set) var routine = Movement.routine(forBreak: 0)
 
     var onDone: (() -> Void)?
-    var onSnooze: (() -> Void)?
+    var onSnooze: ((Int) -> Void)?
 
     private var timer: Timer?
     private var stepStarted = Date()
@@ -65,9 +65,9 @@ final class BreakSession: ObservableObject {
         if phase == .guiding { finish() } else { complete() }
     }
 
-    func snooze() {
+    func snooze(minutes: Int) {
         stopTimer()
-        onSnooze?()
+        onSnooze?(minutes)
     }
 
     // MARK: Private

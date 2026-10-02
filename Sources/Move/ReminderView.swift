@@ -10,6 +10,8 @@ extension EnvironmentValues {
 }
 
 struct ReminderView: View {
+    static let cornerRadius: CGFloat = 24
+
     @ObservedObject var session: BreakSession
 
     var body: some View {
@@ -17,22 +19,34 @@ struct ReminderView: View {
             switch session.phase {
             case .prompt:
                 PromptView(session: session)
+                    .cardContent(for: .prompt)
                     .transition(.opacity.combined(with: .offset(x: -12)))
             case .guiding:
+                // Fades in once the card has mostly grown into place in the middle of the screen.
                 GuideView(session: session)
-                    .transition(.opacity.combined(with: .offset(x: 12)))
+                    .cardContent(for: .guiding)
+                    .transition(.asymmetric(insertion: .opacity.animation(.smooth(duration: 0.45).delay(0.25)),
+                                            removal: .opacity))
             case .finished:
                 FinishedView(session: session)
+                    .cardContent(for: .finished)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
         }
         .animation(.smooth(duration: 0.4), value: session.phase)
-        .padding(.horizontal, 22)
-        .padding(.top, 22)
-        .padding(.bottom, 18)
-        .frame(width: ReminderPanelController.cardSize.width,
-               height: ReminderPanelController.cardSize.height)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .modifier(CardBackground())
+    }
+}
+
+private extension View {
+    /// Lays content out at its phase's final card size, so it doesn't reflow while the window resizes around it.
+    func cardContent(for phase: BreakSession.Phase) -> some View {
+        let size = ReminderPanelController.size(for: phase)
+        return padding(.horizontal, 22)
+            .padding(.top, 22)
+            .padding(.bottom, 18)
+            .frame(width: size.width, height: size.height)
     }
 }
 
@@ -61,15 +75,13 @@ private struct PromptView: View {
             Spacer(minLength: 18)
 
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(session.routine) { MovementRow(movement: $0) }
+                ForEach(session.routine.filter { !$0.isTransition }) { MovementRow(movement: $0) }
             }
 
             Spacer(minLength: 18)
 
             HStack(spacing: 6) {
-                Button("Later") { session.snooze() }
-                    .buttonStyle(QuietButtonStyle())
-                    .help("Remind me again in 10 minutes")
+                LaterMenu(session: session)
                 Spacer()
                 Button("Done") { session.markDone() }
                     .buttonStyle(SoftButtonStyle())
@@ -83,6 +95,43 @@ private struct PromptView: View {
                 .buttonStyle(PrimaryButtonStyle())
                 .help("A gentle \(session.totalMinutesLabel) routine")
             }
+        }
+    }
+}
+
+/// "Later" opens a short list of snooze lengths.
+private struct LaterMenu: View {
+    @ObservedObject var session: BreakSession
+    @Environment(\.isSnapshot) private var isSnapshot
+
+    static let options = [2, 5, 10, 15]
+
+    var body: some View {
+        if isSnapshot {
+            // ImageRenderer can't draw AppKit-backed menus, so screenshots get the bare label.
+            Button {} label: { label }
+                .buttonStyle(QuietButtonStyle())
+        } else {
+            Menu {
+                Text("Remind me again in…")
+                ForEach(Self.options, id: \.self) { minutes in
+                    Button("\(minutes) Minutes") { session.snooze(minutes: minutes) }
+                }
+            } label: {
+                label
+            }
+            .menuStyle(.button)
+            .buttonStyle(QuietButtonStyle())
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help("Snooze this reminder")
+        }
+    }
+
+    private var label: some View {
+        HStack(spacing: 4) {
+            Text("Later")
+            Image(systemName: "chevron.down").font(.system(size: 8, weight: .semibold))
         }
     }
 }
@@ -164,43 +213,53 @@ private struct GuideView: View {
                 Spacer()
                 StepDots(count: session.routine.count, current: session.stepIndex)
             }
+            .overlay {
+                PostureBadge(posture: step.posture)
+                    .animation(.smooth(duration: 0.35), value: step.posture)
+            }
 
-            Spacer(minLength: 10)
+            Spacer(minLength: 12)
 
             ZStack {
                 Circle()
-                    .stroke(Color.sage.opacity(0.15), lineWidth: 6)
+                    .fill(RadialGradient(colors: [Color.sage.opacity(0.13), Color.sage.opacity(0.04)],
+                                         center: .center, startRadius: 10, endRadius: 118))
+                Circle()
+                    .stroke(Color.sage.opacity(0.15), lineWidth: 5)
                 Circle()
                     .trim(from: 0, to: session.progress)
-                    .stroke(Color.sage, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .stroke(Color.sage, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                VStack(spacing: 5) {
-                    Image(systemName: step.symbol)
-                        .font(.system(size: 30, weight: .medium))
-                        .foregroundStyle(Color.sage)
-                        .contentTransition(.symbolEffect(.replace))
-                        .animation(.smooth, value: step.id)
-                    Text(timeLabel(session.remainingSeconds))
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText(countsDown: true))
-                }
+                MovementFigure(motion: step.motion)
+                    .clipShape(Circle().inset(by: 8))
+                    .id(step.id)
+                    .transition(.opacity.combined(with: .scale(scale: 0.94)))
             }
-            .frame(width: 120, height: 120)
+            .frame(width: 236, height: 236)
+            .animation(.smooth(duration: 0.5), value: step.id)
 
-            Spacer(minLength: 16)
+            Text(timeLabel(session.remainingSeconds))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(Color.sage)
+                .contentTransition(.numericText(countsDown: true))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .background(Color.sage.opacity(0.12), in: Capsule())
+                .padding(.top, 14)
+
+            Spacer(minLength: 12)
 
             VStack(spacing: 6) {
                 Text(step.title)
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                 Text(step.cue)
-                    .font(.system(size: 12.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(1.5)
                     .fixedSize(horizontal: false, vertical: true)
-                    .frame(height: 36, alignment: .top)
+                    .frame(height: 38, alignment: .top)
             }
             .id(step.id)
             .transition(.opacity)
@@ -220,6 +279,41 @@ private struct GuideView: View {
 
     private func timeLabel(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+}
+
+/// Says whether this movement is done in your chair or on your feet, and calls out the moment to stand up.
+private struct PostureBadge: View {
+    let posture: Movement.Posture
+
+    var body: some View {
+        let rising = posture == .rising
+        HStack(spacing: 4) {
+            Image(systemName: symbol).font(.system(size: 9, weight: .semibold))
+            Text(label).font(.system(size: 10.5, weight: .semibold))
+        }
+        .foregroundStyle(rising ? Color.white : Color.sage)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 4)
+        .background(Color.sage.opacity(rising ? 1 : 0.13), in: Capsule())
+        .id(posture)
+        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+    }
+
+    private var label: String {
+        switch posture {
+        case .seated: "In your chair"
+        case .rising: "Stand up"
+        case .standing: "On your feet"
+        }
+    }
+
+    private var symbol: String {
+        switch posture {
+        case .seated: "chair.fill"
+        case .rising: "arrow.up"
+        case .standing: "figure.stand"
+        }
     }
 }
 
@@ -279,7 +373,7 @@ private struct CardBackground: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: ReminderView.cornerRadius, style: .continuous)
         if isSnapshot {
             content
                 .background(colorScheme == .dark ? Color(white: 0.17, opacity: 0.94) : Color(white: 0.98, opacity: 0.9), in: shape)
