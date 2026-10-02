@@ -1,0 +1,130 @@
+<p align="center">
+  <img src="docs/icon.png" width="128" alt="Move app icon">
+</p>
+
+<h1 align="center">Move</h1>
+
+<p align="center">
+  <b>A gentle nudge to get up from your desk every 30 minutes.</b><br>
+  A tiny, free menu bar app for macOS. No account, no tracking, no nagging.
+</p>
+
+<p align="center">
+  <a href="https://github.com/dpappo/move/releases/latest/download/Move.zip"><b>⬇ Download for Mac</b></a>
+  &nbsp;·&nbsp; macOS 14 or later &nbsp;·&nbsp; Apple silicon & Intel
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/hero-dark.png">
+    <img src="docs/screenshots/hero-light.png" alt="Move's reminder card in the top-right corner of a Mac desktop, beside an open window" width="860">
+  </picture>
+</p>
+
+Sitting for hours is rough on your back, neck and focus. Most break timers fix that by getting in your way: full-screen overlays, sounds, stolen keyboard focus mid-sentence.
+
+Move does it quietly instead. A small card slides into the corner of your screen and waits. It never takes focus, so you can finish your thought, then step away. If you want a hand, it walks you through a 3-minute routine designed for desk workers.
+
+## Why you'll like it
+
+- **Never interrupts.** The card floats in the corner and doesn't steal focus from what you're typing.
+- **Knows when you've already had a break.** Step away for 5+ minutes or close the lid, and the timer starts over on its own.
+- **Follows along with you.** A guided routine with a timer and soft chimes, so you don't have to think about what to do.
+- **Respects your evenings.** By default it only reminds you Monday to Friday, 9 to 6.
+- **Tiny and private.** A 2 MB app with no network access and no analytics. Your settings stay on your Mac.
+
+## Install
+
+**The quick way.** Paste this into Terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dpappo/move/main/scripts/install.sh | bash
+```
+
+It downloads the latest release into your Applications folder and opens it. Look for the walking figure in your menu bar.
+
+**Or download it yourself.**
+
+1. Download [**Move.zip**](https://github.com/dpappo/move/releases/latest/download/Move.zip) and unzip it.
+2. Drag **Move.app** into your **Applications** folder.
+3. Open it. macOS will warn you that the app isn't from the App Store. Open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**. You only need to do this once.
+
+If macOS says the app "is damaged and can't be opened", run `xattr -dr com.apple.quarantine /Applications/Move.app` in Terminal, then open it again.
+
+> Why the warning? Move is free and open source, so it isn't signed with a paid Apple Developer certificate. You can read every line of code here, or build it yourself (see below).
+
+## How to use it
+
+### 1. When it's time to move
+
+Every 30 minutes, a card appears in the top-right corner. Pick one:
+
+| Button | What it does |
+| --- | --- |
+| **Guide me** | Starts a guided routine of about 3 minutes |
+| **Done** | You moved on your own. See you in 30 minutes |
+| **Later** | Snooze for 10 minutes |
+
+You can drag the card anywhere. It shows up on every Space, even over full-screen apps.
+
+### 2. The guided routine
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/flow-dark.png">
+  <img src="docs/screenshots/flow-light.png" alt="Three reminder cards: the prompt listing five movements, a guided step with a countdown ring, and a 'Nicely done' confirmation">
+</picture>
+
+Each step has a countdown ring and a short cue. A soft chime marks the next step, and you can **Skip** a step or tap **Done** to finish early. Three routines take turns from one break to the next, so it doesn't get stale:
+
+| Stand & stretch | Reach & rise | Twist & hinge |
+| --- | --- | --- |
+| Stand tall & lean back | Reach & side bend | Twist your upper back |
+| Roll & squeeze shoulders | Open your chest | Stretch your wrists |
+| Tuck & turn your neck | Ease your neck | Open your hips |
+| Calf raises | Sit to stand | Hip hinges |
+| Walk around (90 s) | Take a longer walk (90 s) | Walk & breathe (90 s) |
+
+### 3. The menu bar
+
+Click the walking figure in your menu bar to see when your next break is and how many you've taken today. From there you can:
+
+| Menu item | What it does |
+| --- | --- |
+| **Move Now** (⌘M) | Show the card right away |
+| **Pause** | Take a break from reminders for 30 minutes, 1 hour, 2 hours, or until tomorrow |
+| **Remind Every** | Choose 30, 45 or 60 minutes |
+| **Only During Work Hours** | Remind only Monday to Friday, 9:00 to 18:00 (on by default) |
+| **Soft Chimes in Guide** | Turn the step chimes on or off |
+| **Open at Login** | Start Move with your Mac (on by default) |
+
+When reminders are paused, the walking figure changes to a standing one.
+
+### Uninstall
+
+Choose **Quit Move** from the menu, then drag **Move.app** from Applications to the Trash.
+
+## Build from source
+
+You'll need Xcode or the Xcode command line tools on macOS 14 or later.
+
+```bash
+git clone https://github.com/dpappo/move.git
+cd move
+./scripts/build.sh --install
+```
+
+That builds `Move.app`, copies it to `/Applications`, and opens it. On macOS 26 the card uses Liquid Glass.
+
+## Contributing
+
+Issues and pull requests are welcome. The whole app is about a thousand lines of Swift in [`Sources/Move`](Sources/Move).
+
+The screenshots above are rendered from the app's real SwiftUI views, so they never fall out of date. To have them refresh automatically, turn on the repo's git hooks once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+From then on, every `git push` re-renders `docs/screenshots`. If the UI changed, the hook commits the new screenshots and asks you to push again. You can also render them by hand with `./scripts/screenshots.sh`, or skip the hook once with `SKIP_SCREENSHOTS=1 git push`.
+
+To publish a release, push a version tag such as `git tag v1.1 && git push origin v1.1`. GitHub Actions builds a universal app and attaches `Move.zip` to the release, which is what the download links and install script use.

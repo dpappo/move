@@ -1,0 +1,29 @@
+#!/bin/bash
+# Keeps the README screenshots in step with the UI.
+# Before each push it re-renders docs/screenshots. If they changed, it commits them and stops
+# the push so you can push again with the new screenshots included.
+# Skip once with: SKIP_SCREENSHOTS=1 git push
+set -euo pipefail
+
+[ "${SKIP_SCREENSHOTS:-}" = 1 ] && exit 0
+cd "$(git rev-parse --show-toplevel)"
+
+# Only refresh on a branch you're actually on; leave detached HEADs and tag-only pushes alone.
+git symbolic-ref -q HEAD >/dev/null || exit 0
+
+echo "pre-push: refreshing README screenshots…"
+if ! ./scripts/screenshots.sh >/dev/null; then
+    echo "pre-push: couldn't render screenshots (push with SKIP_SCREENSHOTS=1 to skip)." >&2
+    exit 1
+fi
+
+git add docs/screenshots
+if git diff --cached --quiet -- docs/screenshots; then
+    exit 0
+fi
+
+git commit -q -m "Refresh README screenshots" -- docs/screenshots
+echo "" >&2
+echo "pre-push: the UI changed, so the screenshots were refreshed and committed." >&2
+echo "pre-push: run 'git push' again to include them." >&2
+exit 1
