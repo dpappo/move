@@ -30,8 +30,9 @@ Move does it quietly instead. A small card slides into the corner of your screen
 - **Never interrupts.** The card floats in the corner and doesn't steal focus from what you're typing.
 - **Knows when you've already had a break.** Step away for 5+ minutes or close the lid, and the timer starts over on its own.
 - **Follows along with you.** A guided routine with a timer and soft chimes, so you don't have to think about what to do.
+- **Waits out your meetings.** Move holds the reminder until your meeting ends, using your Google (or any) calendar.
 - **Respects your evenings.** By default it only reminds you Monday to Friday, 9 to 6.
-- **Tiny and private.** A 2 MB app with no network access and no analytics. Your settings stay on your Mac.
+- **Tiny and private.** A 2 MB app with no network access and no analytics. Your settings and calendar stay on your Mac.
 
 ## Install
 
@@ -97,10 +98,21 @@ Click the walking figure in your menu bar to see when your next break is and how
 | **Pause** | Take a break from reminders for 30 minutes, 1 hour, 2 hours, or until tomorrow |
 | **Remind Every** | Choose 30, 45 or 60 minutes |
 | **Only During Work Hours** | Remind only Monday to Friday, 9:00 to 18:00 (on by default) |
+| **Not During Meetings** | Hold the reminder until your meeting ends (on by default, asks for calendar access) |
 | **Soft Chimes in Guide** | Turn the step chimes on or off |
 | **Open at Login** | Start Move with your Mac (on by default) |
 
 When reminders are paused, the walking figure changes to a standing one.
+
+### 4. Meetings
+
+With **Not During Meetings** on, Move checks your calendar before it taps you on the shoulder. If you're in a meeting when a break comes due, it waits and shows the card once the meeting ends. If the card is already up and untouched when a meeting starts, it slips away and comes back afterwards. Sitting still on a call doesn't count as a break, either.
+
+Move reads the calendars in the Mac's **Calendar** app, so there's nothing to sign in to and nothing leaves your Mac. To use your Google Calendar, add your Google account in **System Settings → Internet Accounts** and make sure **Calendars** is switched on. Outlook, iCloud and Exchange calendars work the same way.
+
+The first time you open Move, it asks for access to your calendars. If you say no, the feature stays off until you allow it in **System Settings → Privacy & Security → Calendars**.
+
+An event counts as a meeting when more than one person is invited, so blocks you put on your own calendar, like focus time or lunch, don't hold your reminders. Move ignores all-day events, meetings you've declined, and read-only calendars like a teammate's calendar you've subscribed to.
 
 ### Uninstall
 

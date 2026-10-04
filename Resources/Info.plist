@@ -20,6 +20,8 @@
     <string>1</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
+    <key>NSCalendarsFullAccessUsageDescription</key>
+    <string>Move checks your calendar so it doesn't remind you to move while you're in a meeting. Nothing leaves your Mac.</string>
     <key>LSUIElement</key>
     <true/>
     <key>NSHighResolutionCapable</key>

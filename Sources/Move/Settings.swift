@@ -13,6 +13,12 @@ enum Settings {
         set { defaults.set(newValue, forKey: "workHoursOnly") }
     }
 
+    /// On by default. Only takes effect once you've allowed calendar access.
+    static var avoidMeetings: Bool {
+        get { defaults.object(forKey: "avoidMeetings") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "avoidMeetings") }
+    }
+
     static var chimes: Bool {
         get { defaults.object(forKey: "chimes") as? Bool ?? true }
         set { defaults.set(newValue, forKey: "chimes") }

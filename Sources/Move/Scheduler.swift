@@ -9,10 +9,13 @@ final class Scheduler {
     private(set) var isShowing = false
 
     var onDue: (() -> Void)?
+    /// Called when a meeting starts while the card is up. Return true if the card was put away.
+    var onMeetingStarted: (() -> Bool)?
 
     /// If you've been away from the keyboard this long, you've already had a break.
     private let awayThreshold: TimeInterval = 5 * 60
     private var timer: Timer?
+    private var shownAt = Date()
 
     var interval: TimeInterval { TimeInterval(Settings.intervalMinutes * 60) }
 
@@ -40,7 +43,14 @@ final class Scheduler {
 
     private func tick() {
         let now = Date()
-        guard !isShowing else { return }
+        guard !isShowing else {
+            // Tuck the card away for a meeting that started after it appeared, and bring it back after.
+            if let meeting = Meetings.current(at: now), meeting.began > shownAt, onMeetingStarted?() == true {
+                isShowing = false
+                nextBreak = min(nextBreak, now)
+            }
+            return
+        }
 
         if let until = pausedUntil {
             guard now >= until else { return }
@@ -51,22 +61,26 @@ final class Scheduler {
             reset()
             return
         }
+        // Wait out meetings. Sitting still on a call doesn't count as time away, either.
+        if Meetings.current(at: now) != nil { return }
         if Self.idleSeconds() >= awayThreshold {
             reset()
             return
         }
-        if now >= nextBreak {
-            isShowing = true
-            onDue?()
-        }
+        if now >= nextBreak { show() }
+    }
+
+    private func show() {
+        isShowing = true
+        shownAt = Date()
+        onDue?()
     }
 
     // MARK: Actions
 
     func showNow() {
         guard !isShowing else { return }
-        isShowing = true
-        onDue?()
+        show()
     }
 
     func completeBreak() {
@@ -110,6 +124,9 @@ final class Scheduler {
             return "Paused until \(until.formatted(date: .omitted, time: .shortened))"
         }
         if Settings.workHoursOnly && !WorkHours.contains(now) { return "Resting — outside work hours" }
+        if let meeting = Meetings.current(at: now), nextBreak < meeting.ends {
+            return "Waiting for your meeting to end at \(meeting.ends.formatted(date: .omitted, time: .shortened))"
+        }
         let minutes = max(1, Int(ceil(nextBreak.timeIntervalSince(now) / 60)))
         return "Next break in \(minutes) min"
     }

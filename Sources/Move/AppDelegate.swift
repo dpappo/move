@@ -1,4 +1,5 @@
 import AppKit
+import EventKit
 import ServiceManagement
 
 @MainActor
@@ -19,6 +20,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.panel.show()
             self?.updateIcon()
         }
+        scheduler.onMeetingStarted = { [weak self] in
+            // Only put away an untouched card; never cut off a routine you've started.
+            guard let self, self.session.phase == .prompt else { return false }
+            self.panel.hide()
+            return true
+        }
         session.onDone = { [weak self] in
             self?.scheduler.completeBreak()
             self?.panel.hide()
@@ -31,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         scheduler.start()
         enableLoginOnFirstRun()
+        askForCalendarOnFirstRun()
 
         if CommandLine.arguments.contains("--now") { scheduler.showNow() }
     }
@@ -46,6 +54,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } catch {
             NSLog("Move: could not enable open at login: \(error.localizedDescription)")
         }
+    }
+
+    /// Waiting out meetings is on by default, so ask for calendar access once up front.
+    /// If you say no, the menu item shows as off and clicking it explains how to allow it later.
+    private func askForCalendarOnFirstRun() {
+        guard Settings.avoidMeetings, EKEventStore.authorizationStatus(for: .event) == .notDetermined else { return }
+        Meetings.requestAccess { _ in }
     }
 
     private func updateIcon() {
@@ -105,6 +120,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         hours.toolTip = "Monday–Friday, \(WorkHours.startHour):00–\(WorkHours.endHour):00"
         menu.addItem(hours)
 
+        let meetings = item("Not During Meetings", #selector(toggleMeetings))
+        meetings.state = Meetings.isOn ? .on : .off
+        meetings.toolTip = "Waits until your meeting ends, using events from the Calendar app"
+        menu.addItem(meetings)
+
         let chimes = item("Soft Chimes in Guide", #selector(toggleChimes))
         chimes.state = Settings.chimes ? .on : .off
         menu.addItem(chimes)
@@ -149,6 +169,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func toggleWorkHours() {
         Settings.workHoursOnly.toggle()
         if !scheduler.isShowing { scheduler.reset() }
+    }
+
+    @objc private func toggleMeetings() {
+        if Meetings.isOn {
+            Settings.avoidMeetings = false
+            return
+        }
+        Meetings.requestAccess { granted in Settings.avoidMeetings = granted }
     }
 
     @objc private func toggleChimes() { Settings.chimes.toggle() }
