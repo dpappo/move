@@ -19,6 +19,12 @@ enum Settings {
         set { defaults.set(newValue, forKey: "avoidMeetings") }
     }
 
+    /// Keeps the guided routine in your chair, for when you can't get up. Remembered from break to break.
+    static var staySeated: Bool {
+        get { defaults.bool(forKey: "staySeated") }
+        set { defaults.set(newValue, forKey: "staySeated") }
+    }
+
     static var chimes: Bool {
         get { defaults.object(forKey: "chimes") as? Bool ?? true }
         set { defaults.set(newValue, forKey: "chimes") }

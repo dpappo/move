@@ -21,8 +21,13 @@ struct Movement: Identifiable, Equatable {
     /// of the time to walking. Between them they move the spine every way (back, side, twist).
     static let routines: [[Movement]] = [standAndStretch, reachAndRise, twistAndHinge]
 
-    static func routine(forBreak index: Int) -> [Movement] {
-        routines[index % routines.count]
+    /// For when you can't get up, say at a table with colleagues: about 2 minutes, all in your chair, small enough
+    /// to do without fuss. The legs still get moving, through lifts, marches and extensions under the desk.
+    static let seatedRoutines: [[Movement]] = [loosenUp, marchAndReach, twistAndTap]
+
+    static func routine(forBreak index: Int, seated: Bool = false) -> [Movement] {
+        let routines = seated ? seatedRoutines : routines
+        return routines[index % routines.count]
     }
 
     private static func standUp(id: Int) -> Movement {
@@ -166,4 +171,78 @@ struct Movement: Identifiable, Equatable {
                  posture: .standing,
                  seconds: 90),
     ]
+
+    // MARK: Seated only
+
+    private static let loosenUp: [Movement] = [
+        standAndStretch[0],
+        standAndStretch[1],
+        roundAndArch(id: 2),
+        heelToeLifts(id: 3),
+        legExtensions(id: 4),
+    ]
+
+    private static let marchAndReach: [Movement] = [
+        reachAndRise[0],
+        reachAndRise[1],
+        seatedMarch(id: 2),
+        legExtensions(id: 3),
+        roundAndArch(id: 4),
+    ]
+
+    private static let twistAndTap: [Movement] = [
+        twistAndHinge[0],
+        twistAndHinge[1],
+        standAndStretch[0].with(id: 2),
+        heelToeLifts(id: 3),
+        seatedMarch(id: 4),
+    ]
+
+    private static func roundAndArch(id: Int) -> Movement {
+        Movement(id: id,
+                 title: "Round & arch your back",
+                 hint: "Slowly, with your breath",
+                 cue: "Hands on your thighs. Round your back as you breathe out, then lift your chest as you breathe in.",
+                 symbol: "figure.yoga",
+                 motion: .catCow,
+                 posture: .seated,
+                 seconds: 25)
+    }
+
+    private static func heelToeLifts(id: Int) -> Movement {
+        Movement(id: id,
+                 title: "Heel & toe lifts",
+                 hint: "Toes up, then heels up",
+                 cue: "Feet flat. Lift your toes, then press down through them to lift your heels. Keep it going.",
+                 symbol: "shoeprints.fill",
+                 motion: .heelToeLifts,
+                 posture: .seated,
+                 seconds: 25)
+    }
+
+    private static func legExtensions(id: Int) -> Movement {
+        Movement(id: id,
+                 title: "Straighten your legs",
+                 hint: "One at a time, toes toward you",
+                 cue: "Straighten one leg out under the desk, toes toward you, and hold. Lower it and switch.",
+                 symbol: "figure.seated.side",
+                 motion: .legExtensions,
+                 posture: .seated,
+                 seconds: 30)
+    }
+
+    private static func seatedMarch(id: Int) -> Movement {
+        Movement(id: id,
+                 title: "March in your chair",
+                 hint: "Lift one knee, then the other",
+                 cue: "Sit tall and lift one knee, then the other, like marching in place. Keep a steady rhythm.",
+                 symbol: "figure.walk.motion",
+                 motion: .seatedMarch,
+                 posture: .seated,
+                 seconds: 30)
+    }
+
+    private func with(id: Int) -> Movement {
+        Movement(id: id, title: title, hint: hint, cue: cue, symbol: symbol, motion: motion, posture: posture, seconds: seconds)
+    }
 }

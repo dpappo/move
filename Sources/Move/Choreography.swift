@@ -5,6 +5,7 @@ enum Motion {
     case standTall, shoulderRolls, neckTurns, calfRaises, walk
     case sideBend, chestOpener, neckTilts, sitToStand
     case twist, wristStretch, hipOpener, hipHinge
+    case legExtensions, heelToeLifts, seatedMarch, catCow
     case standUp
 }
 
@@ -105,7 +106,7 @@ struct Choreography {
     var zoom: Double = 1            // closer framing for small movements (neck, shoulders, wrists)
     var focus: Double = 94          // the height, in figure units, that sits at the middle of the frame
     var offsetX: Double = 0         // nudges figures that reach to one side back toward the middle
-    var anchorHips = false          // keep the hips still instead of the feet (walking on a moving floor)
+    var hipsX: Double?              // pin the hips here instead of keeping the feet still (walking, or legs moving in a chair)
     var groundSpeed: Double = 0     // figure units per second the floor scrolls by
     var seated = false              // sitting and facing us, so the thighs point at the viewer
     var prop: Prop?
@@ -206,7 +207,7 @@ extension Motion {
                 $0.legR = Limb(2, -2); $0.legL = Limb(12, -55, 12)
                 $0.armR = Limb(0, 14); $0.armL = Limb(0, 14)
             }
-            return Choreography(facing: .side, anchorHips: true, groundSpeed: 120, keys: [
+            return Choreography(facing: .side, hipsX: 0, groundSpeed: 120, keys: [
                 Key(contact, move: 0.3, flow: true),
                 Key(passing, move: 0.3, flow: true),
                 Key(contact.mirrored, move: 0.3, flow: true),
@@ -320,8 +321,57 @@ extension Motion {
                 Key(stand, move: 1.4, hold: 0.4),
                 Key(hinge, move: 1.5, hold: 0.7),
             ])
+
+        case .legExtensions:
+            let sit = Self.feetFlat
+            let straight = sit.with { $0.legR = Limb(88, -6, -70) }
+            return Choreography(facing: .side, zoom: 1.2, focus: 70, hipsX: Self.seatX, prop: .chair, keys: [
+                Key(sit, move: 1, hold: 0.4),
+                Key(straight, move: 1.2, hold: 1.6),
+                Key(sit, move: 1.1, hold: 0.4),
+                Key(straight.mirrored, move: 1.2, hold: 1.6),
+            ])
+
+        case .heelToeLifts:
+            // Heels stay down while the toes lift, then the toes stay down while the heels lift.
+            let flat = Self.feetFlat
+            let toesUp = flat.with { $0.legs = Limb(90, -90, -32) }
+            let heelsUp = flat.with { $0.legs = Limb(100, -112, 38) }
+            return Choreography(facing: .side, zoom: 1.35, focus: 64, offsetX: 12, hipsX: Self.seatX, prop: .chair, keys: [
+                Key(flat, move: 0.8, hold: 0.3),
+                Key(toesUp, move: 0.8, hold: 0.6),
+                Key(flat, move: 0.7, hold: 0.2),
+                Key(heelsUp, move: 0.8, hold: 0.6),
+            ])
+
+        case .seatedMarch:
+            let sit = Self.feetFlat
+            // The opposite arm swings forward, as in a walk.
+            let lift = sit.with { $0.legR = Limb(126, -126, 12); $0.armR = Limb(-24, 88); $0.armL = Limb(36, 54) }
+            return Choreography(facing: .side, zoom: 1.2, focus: 70, hipsX: Self.seatX, prop: .chair, keys: [
+                Key(sit, move: 0.55, hold: 0.1),
+                Key(lift, move: 0.6, hold: 0.25),
+                Key(sit, move: 0.55, hold: 0.1),
+                Key(lift.mirrored, move: 0.6, hold: 0.25),
+            ])
+
+        case .catCow:
+            let sit = Self.feetFlat
+            let round = sit.with { $0.lean = 10; $0.bend = 16; $0.nod = -0.9; $0.shrugX = 5 }
+            let arch = sit.with { $0.lean = 5; $0.bend = -20; $0.nod = 1; $0.shrugX = -7 }
+            return Choreography(facing: .side, zoom: 1.3, focus: 90, hipsX: Self.seatX, prop: .chair, keys: [
+                Key(sit, move: 1, hold: 0.3),
+                Key(round, move: 1.8, hold: 1),
+                Key(sit, move: 1.3),
+                Key(arch, move: 1.8, hold: 1),
+            ])
         }
     }
+
+    /// Sitting in profile with both feet flat, so the floor stays put while one leg moves.
+    private static let feetFlat = Pose.seated.with { $0.legs = Limb(90, -90) }
+    /// Where the hips sit on the chair in profile, for movements that pin them while the feet move.
+    private static let seatX = -45.0
 
     /// Getting out of a chair: sitting, nose over toes, standing.
     private static var rise: (seated: Pose, hinge: Pose, stand: Pose) {

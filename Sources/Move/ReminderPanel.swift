@@ -6,7 +6,7 @@ import SwiftUI
 /// When you ask to be guided, it glides to the middle of the screen and grows to show each movement.
 @MainActor
 final class ReminderPanelController {
-    static let cardSize = NSSize(width: 340, height: 388)
+    static let cardSize = NSSize(width: 340, height: 420)
     static let guideSize = NSSize(width: 400, height: 500)
 
     static func size(for phase: BreakSession.Phase) -> NSSize {

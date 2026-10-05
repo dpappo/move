@@ -10,6 +10,7 @@ final class BreakSession: ObservableObject {
     @Published private(set) var elapsed: Double = 0
     @Published private(set) var breaksToday = 0
     @Published private(set) var intervalMinutes = 30
+    @Published private(set) var staySeated = false
     @Published private(set) var routine = Movement.routine(forBreak: 0)
 
     var onDone: (() -> Void)?
@@ -33,18 +34,29 @@ final class BreakSession: ObservableObject {
         elapsed = 0
         breaksToday = Settings.breaksToday
         intervalMinutes = Settings.intervalMinutes
-        routine = Movement.routine(forBreak: breaksToday)
+        staySeated = Settings.staySeated
+        routine = Movement.routine(forBreak: breaksToday, seated: staySeated)
     }
 
     /// Freezes the card in a given state, for rendering README screenshots.
-    func stage(_ phase: Phase, step: Int = 0, elapsed: Double = 0, breaksToday: Int, intervalMinutes: Int = 30) {
+    func stage(_ phase: Phase, step: Int = 0, elapsed: Double = 0, breaksToday: Int, intervalMinutes: Int = 30,
+               staySeated: Bool = false) {
         stopTimer()
         self.phase = phase
         self.stepIndex = step
         self.elapsed = elapsed
         self.breaksToday = breaksToday
         self.intervalMinutes = intervalMinutes
-        routine = Movement.routine(forBreak: phase == .finished ? breaksToday - 1 : breaksToday)
+        self.staySeated = staySeated
+        routine = Movement.routine(forBreak: phase == .finished ? breaksToday - 1 : breaksToday, seated: staySeated)
+    }
+
+    /// Picks the routine for this break: in your chair the whole time, or getting on your feet partway.
+    func setStaySeated(_ seated: Bool) {
+        guard phase == .prompt, seated != staySeated else { return }
+        Settings.staySeated = seated
+        staySeated = seated
+        routine = Movement.routine(forBreak: breaksToday, seated: seated)
     }
 
     func startGuide() {

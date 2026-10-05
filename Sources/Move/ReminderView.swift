@@ -62,9 +62,10 @@ private struct PromptView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Time to move")
                         .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    Text("Step away for a couple of minutes.")
+                    Text(session.staySeated ? "A couple of minutes in your chair." : "Step away for a couple of minutes.")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
+                        .contentTransition(.opacity)
                 }
                 Spacer(minLength: 0)
                 if session.breaksToday > 0 {
@@ -72,11 +73,16 @@ private struct PromptView: View {
                 }
             }
 
-            Spacer(minLength: 18)
+            PostureChoice(session: session)
+                .padding(.top, 16)
+
+            Spacer(minLength: 16)
 
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(session.routine.filter { !$0.isTransition }) { MovementRow(movement: $0) }
             }
+            .id(session.staySeated)
+            .transition(.opacity)
 
             Spacer(minLength: 18)
 
@@ -96,6 +102,48 @@ private struct PromptView: View {
                 .help("A gentle \(session.totalMinutesLabel) routine")
             }
         }
+    }
+}
+
+/// Whether this break gets you on your feet, or stays in your chair for when you can't get up,
+/// like at a table with colleagues. The movement list and "Guide me" follow the choice.
+private struct PostureChoice: View {
+    @ObservedObject var session: BreakSession
+    @Namespace private var selection
+
+    var body: some View {
+        HStack(spacing: 2) {
+            option("Sit & stand", symbol: "figure.stand", seated: false,
+                   help: "Starts in your chair, then gets you on your feet")
+            option("Seated only", symbol: "chair.fill", seated: true,
+                   help: "Everything in your chair, for when you can't get up")
+        }
+        .padding(2)
+        .background(Color.primary.opacity(0.06), in: Capsule())
+    }
+
+    private func option(_ title: String, symbol: String, seated: Bool, help: String) -> some View {
+        let selected = session.staySeated == seated
+        return Button {
+            withAnimation(.smooth(duration: 0.3)) { session.setStaySeated(seated) }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: symbol).font(.system(size: 10, weight: .semibold))
+                Text(title)
+            }
+            .font(.system(size: 11.5, weight: .medium))
+            .foregroundStyle(selected ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 5)
+            .background {
+                if selected {
+                    Capsule().fill(Color.sage).matchedGeometryEffect(id: "selected", in: selection)
+                }
+            }
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 }
 

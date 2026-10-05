@@ -80,7 +80,7 @@ private struct Skeleton {
 
         // Plant the lowest foot on the floor, and keep the toes (or hips) from sliding sideways.
         let floor = legs.flatMap { $0[2...] }.map(\.y).min()! - Self.limbWidth / 2
-        let anchorX = choreography.anchorHips ? 0 : (legs[0][3].x + legs[1][3].x) / 2 - (front ? 0 : Self.foot)
+        let anchorX = choreography.hipsX.map { -$0 } ?? (legs[0][3].x + legs[1][3].x) / 2 - (front ? 0 : Self.foot)
         let offset = CGPoint(x: -anchorX, y: -floor)
         spine = spine.map { $0 + offset }
         head = head + offset

@@ -62,7 +62,8 @@ Every 30 minutes, a card appears in the top-right corner. Pick one:
 
 | Button | What it does |
 | --- | --- |
-| **Guide me** | Moves the card to the middle of your screen and walks you through a routine of about 3 minutes |
+| **Sit & stand** / **Seated only** | Choose whether the routine gets you on your feet, or stays in your chair (say, at a table with colleagues). Move remembers your choice |
+| **Guide me** | Moves the card to the middle of your screen and walks you through the routine: about 3 minutes, or 2 if you're staying seated |
 | **Done** | You moved on your own. See you in 30 minutes |
 | **Later** | Snooze for 2, 5, 10, or 15 minutes |
 
@@ -87,6 +88,16 @@ Every routine starts with what you can do in your chair, then tells you when to 
 | **On your feet** | Stand tall & lean back | Open your chest | Open your hips |
 | | Calf raises | | Hip hinges |
 | | Walk around (90 s) | Take a longer walk (90 s) | Walk & breathe (90 s) |
+
+Can't get up right now? Pick **Seated only** on the card and the routine stays in your chair the whole time. These are small enough to do at a table with other people, and still get your legs moving under the desk:
+
+| Loosen up | March & reach | Twist & tap |
+| --- | --- | --- |
+| Roll & squeeze shoulders | Ease your neck | Twist your upper back |
+| Tuck & turn your neck | Reach & side bend | Stretch your wrists |
+| Round & arch your back | March in your chair | Roll & squeeze shoulders |
+| Heel & toe lifts | Straighten your legs | Heel & toe lifts |
+| Straighten your legs | Round & arch your back | March in your chair |
 
 ### 3. The menu bar
 
