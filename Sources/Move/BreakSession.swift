@@ -59,6 +59,20 @@ final class BreakSession: ObservableObject {
         routine = Movement.routine(forBreak: breaksToday, seated: seated)
     }
 
+    /// Trades one movement for another of the same kind, for this break only.
+    func swap(_ movement: Movement) {
+        guard phase == .prompt, let i = routine.firstIndex(of: movement),
+              let replacement = Movement.alternative(to: movement, in: routine) else { return }
+        var steps = routine
+        // Sit to stand is also how you get up, so its stand-in still needs that moment first.
+        steps[i...i] = movement.posture == .rising ? [Movement.standUp(id: 0), replacement] : [replacement]
+        routine = steps.enumerated().map { $0.element.with(id: $0.offset) }
+    }
+
+    func canSwap(_ movement: Movement) -> Bool {
+        Movement.alternative(to: movement, in: routine) != nil
+    }
+
     func startGuide() {
         phase = .guiding
         begin(step: 0)

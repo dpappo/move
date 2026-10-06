@@ -30,7 +30,27 @@ struct Movement: Identifiable, Equatable {
         return routines[index % routines.count]
     }
 
-    private static func standUp(id: Int) -> Movement {
+    /// Every movement you can swap in, each motion once, in routine order (so "Walk around" stands in for all the walks).
+    private static let swappable: [Movement] = {
+        var seen = Set<Motion>()
+        return (routines + seatedRoutines).joined()
+            .filter { !$0.isTransition && $0.posture != .rising && seen.insert($0.motion).inserted }
+    }()
+
+    /// Something else to do in place of `movement`: in your chair for a chair movement, on your feet otherwise,
+    /// and never a motion the routine already has. Swapping again carries on down the list, so it cycles through them all.
+    static func alternative(to movement: Movement, in routine: [Movement]) -> Movement? {
+        let posture: Posture = movement.posture == .seated ? .seated : .standing
+        let candidates = swappable.filter { $0.posture == posture }
+        guard !candidates.isEmpty else { return nil }
+        let taken = Set(routine.map(\.motion))
+        let start = candidates.firstIndex { $0.motion == movement.motion } ?? candidates.count - 1
+        return candidates.indices
+            .map { candidates[(start + 1 + $0) % candidates.count] }
+            .first { !taken.contains($0.motion) }
+    }
+
+    static func standUp(id: Int) -> Movement {
         Movement(id: id,
                  title: "Stand up",
                  hint: "The rest is on your feet",
@@ -44,7 +64,7 @@ struct Movement: Identifiable, Equatable {
     private static let standAndStretch: [Movement] = [
         Movement(id: 0,
                  title: "Roll & squeeze shoulders",
-                 hint: "Roll back, then squeeze your shoulder blades",
+                 hint: "Roll back, then squeeze shoulder blades",
                  cue: "A few slow rolls back and down, then squeeze your shoulder blades together and let go.",
                  symbol: "figure.cooldown",
                  motion: .shoulderRolls,
@@ -242,7 +262,7 @@ struct Movement: Identifiable, Equatable {
                  seconds: 30)
     }
 
-    private func with(id: Int) -> Movement {
+    func with(id: Int) -> Movement {
         Movement(id: id, title: title, hint: hint, cue: cue, symbol: symbol, motion: motion, posture: posture, seconds: seconds)
     }
 }

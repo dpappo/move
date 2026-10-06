@@ -63,6 +63,7 @@ Every 30 minutes, a card appears in the top-right corner. Pick one:
 | Button | What it does |
 | --- | --- |
 | **Sit & stand** / **Seated only** | Choose whether the routine gets you on your feet, or stays in your chair (say, at a table with colleagues). Move remembers your choice |
+| **Swap** (↻ beside a movement) | Not up for one? Swap it for something else you can do in the same spot: a chair movement for another chair movement, an on-your-feet one for another. Keep clicking to go through them all |
 | **Guide me** | Moves the card to the middle of your screen and walks you through the routine: about 3 minutes, or 2 if you're staying seated |
 | **Done** | You moved on your own. See you in 30 minutes |
 | **Later** | Snooze for 2, 5, 10, or 15 minutes |

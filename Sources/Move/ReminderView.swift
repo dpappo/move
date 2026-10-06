@@ -79,7 +79,11 @@ private struct PromptView: View {
             Spacer(minLength: 16)
 
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(session.routine.filter { !$0.isTransition }) { MovementRow(movement: $0) }
+                ForEach(session.routine.filter { !$0.isTransition }, id: \.title) { movement in
+                    MovementRow(movement: movement, onSwap: session.canSwap(movement) ? {
+                        withAnimation(.smooth(duration: 0.3)) { session.swap(movement) }
+                    } : nil)
+                }
             }
             .id(session.staySeated)
             .transition(.opacity)
@@ -186,6 +190,10 @@ private struct LaterMenu: View {
 
 private struct MovementRow: View {
     let movement: Movement
+    /// Swaps this movement for another; nil when there's nothing left to swap in.
+    let onSwap: (() -> Void)?
+
+    @State private var hovering = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -201,7 +209,40 @@ private struct MovementRow: View {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if let onSwap {
+                // Tucked a little into the card's margin, leaving the words as much room as it can.
+                SwapButton(rowHovered: hovering, action: onSwap)
+                    .padding(.trailing, -8)
+            }
         }
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
+    }
+}
+
+/// Stays faint until you point at its row, so the list still reads as a list.
+private struct SwapButton: View {
+    let rowHovered: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(hovering ? AnyShapeStyle(Color.sage) : AnyShapeStyle(.tertiary))
+                .frame(width: 26, height: 26)
+                .background(Color.primary.opacity(hovering ? 0.08 : rowHovered ? 0.05 : 0), in: Circle())
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(.smooth(duration: 0.15), value: hovering)
+        .animation(.smooth(duration: 0.15), value: rowHovered)
+        .help("Swap for something else")
+        .accessibilityLabel("Swap for something else")
     }
 }
 
